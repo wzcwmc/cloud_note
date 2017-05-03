@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<!-- namespace 命名空间-->
+<mapper namespace="org.ks.note.dao.BookDao">
+<!-- 根据用户id查询用户所有笔记本 -->
+<select id="findByUserId" parameterType="String" 
+resultType="org.ks.note.entity.NoteBook">
+	select * from cn_notebook
+	where cn_user_id=#{userId}
+
+</select>
+<!-- 创建笔记本 -->
+<insert id="save" parameterType="org.ks.note.entity.NoteBook">
+	insert into cn_notebook
+   		(cn_notebook_id,cn_user_id,
+   		 cn_notebook_type_id,cn_notebook_name,
+   		 cn_notebook_desc,cn_notebook_createtime)
+   	values(#{cn_notebook_id},#{cn_user_id},
+   		   #{cn_notebook_type_id},#{cn_notebook_name},
+   		   #{cn_notebook_desc},#{cn_notebook_createtime})
+
+</insert>
+
+</mapper>
+

@@ -1,0 +1,214 @@
+===注册===
+1.客户端
+a.发送ajax请求
+--发送时机
+--提交数据
+b.ajax回调函数
+--注册成功,alert给用户提示
+--不成功，提示用户相关错误信息
+2.服务端
+/user/regist.do
+--》DispatcherServlet--》HanlderMapping
+--》UserRegistController.execute
+--》UserService.registUser
+--》UserDao.save--》cn_user
+--返回NoteResult
+========显示笔记本列表=========
+客户端
+a.发送ajax请求
+--页面加载后自动发送请求
+--提交数据：userId
+b.ajax回调 
+解析服务器返回的json，动态生成笔记本
+服务端
+/notebook/loadbooks.do
+-->LoadUserBooksController.execute
+-->BookService.loadUserBooks
+-->BookDao.findByUserId-->cn_notebook
+-->返回NoteResult 解析
+===加载笔记本列表====
+1.客户端
+  a.发送请求
+  --点击笔记本li时发送请求
+  --提交数据 li绑定的bookId
+  b.回调函数
+  解析返回的NoteResult结构的json数据
+  循环生成笔记li
+2.服务端
+/note/loadnotes.do
+-->LoadNotesController
+-->NoteService
+-->NoteDao-->cn_note(按照笔记本的id查询)
+-->返回NoteResult结构的json 
+
+父元素对象.on("事件类型",子元素选择器，事件fn);
+$("#book_list).on("click","li",function()){
+//绑定逻辑
+}
+click()--给现有元素绑定单击事件（J静态元素绑定)
+on()--给现有及未来选择出来的元素绑定单击事件（动态元素绑定）
+
+===显示笔记信息==========
+1.客户端
+a.发送请求
+--单击笔记li发送ajax请求
+--提交数据笔记的id
+b.回调函数
+ 解析返回的笔记信息，填充到编辑区
+ 2.服务端
+ /note/load.do
+ -->LoadNoteController.execute
+ -->NoteService.loadNote
+ -->NoteDao.findById-->cn_note表（按id查询）
+ -->返回NoteResult结构的json数据
+ //实例化编辑器
+ var num=UM.getcontent();
+ //设置编辑器内容
+ um.setContent(noteBody);
+ //获取编辑器内容
+ um.getContent();
+ 
+ ===确认创建笔记本===
+ 客户端:
+ a.发送ajax请求
+   单击对话框的“创建”按钮
+   提交数据，笔记本名称，用户的id
+   b.ajax的回调作用
+   成功，关闭对话框，弹出提示信息，失败关闭对话框，弹出提示信息
+   
+   服务端：
+   /notebook/add.do
+   -->AddBookController.execute
+   -->BookService.addBook
+   -->BookDao.save-->cn_notebook(插入操作
+   -->返回NoteResult
+   ===确认创建笔记====
+   服务端：
+   /note/add.do
+   -->AddNoteController.execute
+   -->NoteService.addNote
+   -->NoteDao.save-->cn_note(插入操作)
+   -->返回NoteResult
+   ==保存笔记=====
+   服务端:
+   /note/update.do
+   -->UpdateNoteContrroller
+   -->NoteService.updateNote
+   -->NoteDao.update--cn_note
+   -->返回NoteResult
+
+==.parents("选择器")
+获取当前匹配元素集合中的每个元素的祖先元素
+//.is(选择器)
+根据选择器检查当前匹配元素集合，如果至少存一个就返回true
+==笔记删除(放入回收站====
+/note/recycle.do
+-->RecycleController.execute
+-->NoteService.recycleNote
+-->NoteDao.updateStatus-->cn_note(修改状态id
+-->返回NoteResult
+
+===笔记的分享=======
+根据分享笔记的id提取笔记信息，写入到cn_share
+/note/share.do
+--->ShareNoteController.execute
+-->NoteService.shareNote
+-->ShareDao--->cn_shar(插入)
+-->返回NoteResult
+
+==笔记移动===
+/note/move.do
+-->MoveNoteController.execute
+-->NoteService.moveNote
+--》
+
+==分享笔记搜索==
+cn_share
+/note/search.do?keyword==xxx
+--SearchShareController.execute
+---ShareDao.findLikeTitle--->cn_share(按标题模糊查询
+---返回NoteResult
+select * from cn_share where cn_share_title like '%三%';
+
+==分页==
+1个参数从前面取出多少条，
+select * from cn_share limit 5;
+2个参数：抓取记录起点（0开始),最大抓取记录数量10
+select * from cn_share limit 0,10;
+
+
+pageSize 抓取量
+current 当前页，第几页
+begin=(current-1)*pageSize;
+
+select * from cn_share limit #{begin},#{pageSize}
+
+db操作1
+catch
+2.jdbc事务管理
+jdbc事务默认提交，每执行一个executeUpdate（）方法
+自动commit或出异常rollback
+
+try{
+	conn.setAtuoCommit(false);
+	操作1-->db操作
+	
+}
+
+3.myBatis框架(单独使用)
+默认没有自动提交，需要使用sqlSession.commit();
+4.与spring结合
+Jdbc和MyBatis与Spring结合,默认一个db操作就自动提交(一个操作一个事务)
+如果需要将多个db操作绑定成一个整体(转账)需要使用spring事务管理。
+
+spring事务管理有以下两种方式
+a.声明事务管理
+--注解配置
+@Transactional注解
+可以放在类和方法上
+类中所有的方法都加上了事务
+方法上表示只对方法上加事务
+加载方法上的事务优先级比类高
+5.spring事物特性
+a.读写(查，增删改)
+默认是可读写，readOnly=false
+若只查询时，建议使用只读模式
+readOnly=true
+@Transactional(readOnly=true)
+b.回滚
+默认运行时异常，检查时异常不会回滚
+IOException
+默认异常时不会回滚，检查时异常不会回滚
+可以使用@Transactional（rollbackFor=IOEception.class）指明
+IOException
+对于自定义异常：建议继承运行时异常
+--xml配置
+b.编程式事务管理(基于java编写，TransactionTemplate，很少使用
+1.Serializable;
+最严格的级别,事务串行执行
+
+Read Uncommitted
+保证了读取过程
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
